@@ -1,0 +1,88 @@
+service: moneylog-serverless
+frameworkVersion: ">=1.1.0 <2.0.0"
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: pr
+  region: eu-central-1
+  profile: serverless
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:eu-central-1:*:*"
+
+functions:
+  create:
+    handler: moneylog/create.createLog
+    name: moneylog-create-log
+    events:
+      - http:
+          path: api/moneylog/{username}
+          method: post
+          cors:
+            origin: "*"
+  get:
+    handler: moneylog/get.getLogsByUsername
+    name: moneylog-get-logs-by-username
+    events:
+      - http:
+          path: api/moneylog/{username}
+          method: get
+          cors:
+            origin: "*"
+  deleteByUsernameAndId:
+    handler: moneylog/deleteByUsernameAndId.deleteByUsernameAndId
+    name: moneylog-delete-log-by-username-and-id
+    events:
+      - http:
+          path: api/moneylog/{username}/{id}
+          method: delete
+          cors:
+            origin: "*"
+  updateByUsernameAndId:
+    handler: moneylog/updateByUsernameAndId.updateByUsernameAndId
+    name: moneylog-update-log-by-username-and-id
+    events:
+      - http:
+          path: api/moneylog/{username}/{id}
+          method: put
+          cors:
+            origin: "*"
+  registerUser:
+    handler: auth/functions/register.registerUser
+    name: moneylog-register-user
+    events:
+      - http:
+          path: api/moneylog/auth/register
+          method: post
+          cors:
+            origin: "https://moneylog.rayhard.pro"
+            allowCredentials: true
+  loginUser:
+    handler: auth/functions/login.loginUser
+    name: moneylog-login-user
+    events:
+      - http:
+          path: api/moneylog/auth/login
+          method: post
+          cors:
+            origin: "https://moneylog.rayhard.pro"
+            allowCredentials: true
+  handleRegistrationResponse:
+    handler: auth/functions/response.handleRegisterResponse
+    name: moneylog-handle-user-registration
+    events:
+      - http:
+          path: api/moneylog/auth/response
+          method: post
+          cors:
+            origin: "https://moneylog.rayhard.pro"
+            allowCredentials: true
